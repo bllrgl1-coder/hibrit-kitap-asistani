@@ -18,19 +18,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Flutter SDK
+      - name: Set up Latest Flutter Stable SDK
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.5'
           channel: 'stable'
-          cache: true
 
-      - name: Prepare Android Platform & Fix Kotlin/SDK Versions
+      - name: Prepare Android Platform (SDK 36 & Kotlin 2.2.20)
         run: |
-          # 1. Flutter 3.24 uyumlulugu ve kararli flutter_tts 4.0.2 surumu
           sed -i 's/\.withValues(alpha: /\.withOpacity(/g' lib/screens/*.dart
-          sed -i 's/flutter_tts: \^4.0.2/flutter_tts: 4.0.2/g' pubspec.yaml
-          # 2. AndroidManifest ve MainActivity yedegini al
           cp android/app/src/main/AndroidManifest.xml /tmp/AndroidManifest.xml.bak
           cp android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani/MainActivity.kt /tmp/MainActivity.kt.bak
           rm -rf android test
@@ -39,14 +34,24 @@ jobs:
           cp /tmp/AndroidManifest.xml.bak android/app/src/main/AndroidManifest.xml
           mkdir -p android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani
           cp /tmp/MainActivity.kt.bak android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani/MainActivity.kt
-          # 3. Kotlin surumunu 2.0.20, AGP surumunu 8.5.0 ve compileSdk=35 / minSdk=23 yap
-          sed -i 's/id "org.jetbrains.kotlin.android" version ".*"/id "org.jetbrains.kotlin.android" version "2.0.20"/g' android/settings.gradle
-          sed -i 's/id "com.android.application" version ".*"/id "com.android.application" version "8.5.0"/g' android/settings.gradle
-          sed -i 's/distributionUrl=.*/distributionUrl=https\:\/\/services.gradle.org\/distributions\/gradle-8.7-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties
-          sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 23/g' android/app/build.gradle
-          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/g' android/app/build.gradle
-          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 35/g' android/app/build.gradle
-          sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 35/g' android/app/build.gradle
+
+          # Hem Groovy (.gradle) hem Kotlin DSL (.gradle.kts) icin compileSdk = 36 ve minSdk = 24 yap
+          for f in android/app/build.gradle android/app/build.gradle.kts; do
+            if [ -f "$f" ]; then
+              sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/g' "$f"
+              sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 36/g' "$f"
+              sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 24/g' "$f"
+              sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 24/g' "$f"
+            fi
+          done
+
+          # Kotlin metadata uyumsuzlugunu tamamen onlemek icin Kotlin 2.2.20 ayarla
+          for s in android/settings.gradle android/settings.gradle.kts; do
+            if [ -f "$s" ]; then
+              sed -i 's/id("org.jetbrains.kotlin.android") version "[^"]*"/id("org.jetbrains.kotlin.android") version "2.2.20"/g' "$s"
+              sed -i 's/id "org.jetbrains.kotlin.android" version "[^"]*"/id "org.jetbrains.kotlin.android" version "2.2.20"/g' "$s"
+            fi
+          done
 
       - name: Install Dependencies
         run: flutter pub get
