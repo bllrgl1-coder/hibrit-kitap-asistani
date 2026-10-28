@@ -22,10 +22,10 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true
 
       - name: Prepare Android Platform & Remove Line 248 Tooltip
         run: |
-          # library_screen.dart 248. satirdaki TextButton.icon tooltip parametresini kaldir
           sed -i '248d' lib/screens/library_screen.dart
           sed -i 's/\.withValues(alpha: /\.withOpacity(/g' lib/screens/*.dart
 
@@ -47,8 +47,10 @@ jobs:
             fi
           done
 
-      - name: Install Dependencies
-        run: flutter pub get
+      - name: Install Dependencies & Upgrade Plugin compileSdk to 36
+        run: |
+          flutter pub get
+          find "$HOME/.pub-cache" -name "build.gradle*" -exec sed -i 's/compileSdkVersion 3[0-5]/compileSdkVersion 36/g; s/compileSdk 3[0-5]/compileSdk 36/g; s/compileSdk = 3[0-5]/compileSdk = 36/g' {} +
 
       - name: Build Release APK
         run: flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation
