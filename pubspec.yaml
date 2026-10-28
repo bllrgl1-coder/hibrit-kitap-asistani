@@ -1,0 +1,45 @@
+name: hibrit_kitap_asistani
+description: "Kişisel Hibrit E-Kitap Okuyucu ve Akıllı Sesli Kitap Asistanı"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # 1. Dosya Seçimi ve Depolama Yönetimi
+  file_picker: ^8.1.2
+  path_provider: ^2.1.4
+  permission_handler: ^11.3.1
+
+  # 2. PDF ve EPUB Ayrıştırma & Akıllı Metin Temizleme
+  syncfusion_flutter_pdf: ^27.1.58
+  archive: ^3.6.1
+  html: ^0.15.4
+
+  # 3. Seslendirme (TTS) Motorları (Nöral Edge-TTS + Çevrimdışı Android TTS)
+  flutter_tts: ^4.0.2
+  http: ^1.2.2
+  web_socket_channel: ^3.0.1
+  crypto: ^3.0.5
+
+  # 4. Ses Oynatıcı, Arka Plan Servisi ve Kilit Ekranı Medya Kontrolü
+  just_audio: ^0.9.40
+  audio_service: ^0.18.15
+  audio_session: ^0.1.21
+
+  # 5. Kalıcı Hafıza ve Durum Yönetimi
+  shared_preferences: ^2.3.2
+  provider: ^6.1.2
+  uuid: ^4.5.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

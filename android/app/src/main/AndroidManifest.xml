@@ -1,0 +1,77 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- 1. AĞ İZİNLERİ: Doğal Türkçe Nöral TTS (Edge-TTS) servisine bağlanmak için -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- 2. ARKA PLAN VE GÜÇ İZİNLERİ: Ekran kapandığında sesin kesilmemesi ve arka planda medya oynatımı için -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+    <!-- 3. BİLDİRİM İZNİ: Android 13 (API 33+) ve üzeri cihazlarda medya bildirim çubuğunu göstermek için -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- 4. DOSYA OKUMA İZİNLERİ: Cihazdaki PDF ve EPUB dosyalarını içe aktarmak için (Eski Android sürümleri uyumluluğu) -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <!-- Android 11+ (API 30+) cihazlarda yerleşik TTS (Text-to-Speech) motorunu sorgulayabilmek için -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+
+    <application
+        android:label="Hibrit Kitap Asistanı"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
+
+        <!-- AudioService ile uyumlu olması için AudioServiceActivity kullanıyoruz -->
+        <activity
+            android:name="com.ryanheise.audioservice.AudioServiceActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            <meta-data
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- ARKA PLAN MEDYA SERVİSİ: Ekran kilitliyken veya uygulama arka plandayken sesli kitabı yürüten servis -->
+        <service
+            android:name="com.ryanheise.audioservice.AudioService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="true"
+            tools:ignore="Instantiatable">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
+
+        <!-- KİLİT EKRANI VE KULAKLIK TUŞU ALICISI: Oynat/Duraklat, 15sn İleri/Geri, Sonraki Bölüm tuşlarını yakalar -->
+        <receiver
+            android:name="com.ryanheise.audioservice.MediaButtonReceiver"
+            android:exported="true"
+            tools:ignore="Instantiatable">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+    </application>
+</manifest>
