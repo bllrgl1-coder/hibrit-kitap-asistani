@@ -23,9 +23,12 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Prepare Android Platform (SDK 36 & Kotlin 2.2.20)
+      - name: Prepare Android Platform & Remove Line 248 Tooltip
         run: |
+          # library_screen.dart 248. satirdaki TextButton.icon tooltip parametresini kaldir
+          sed -i '248d' lib/screens/library_screen.dart
           sed -i 's/\.withValues(alpha: /\.withOpacity(/g' lib/screens/*.dart
+
           cp android/app/src/main/AndroidManifest.xml /tmp/AndroidManifest.xml.bak
           cp android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani/MainActivity.kt /tmp/MainActivity.kt.bak
           rm -rf android test
@@ -35,7 +38,6 @@ jobs:
           mkdir -p android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani
           cp /tmp/MainActivity.kt.bak android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani/MainActivity.kt
 
-          # Hem Groovy (.gradle) hem Kotlin DSL (.gradle.kts) icin compileSdk = 36 ve minSdk = 24 yap
           for f in android/app/build.gradle android/app/build.gradle.kts; do
             if [ -f "$f" ]; then
               sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/g' "$f"
@@ -45,19 +47,11 @@ jobs:
             fi
           done
 
-          # Kotlin metadata uyumsuzlugunu tamamen onlemek icin Kotlin 2.2.20 ayarla
-          for s in android/settings.gradle android/settings.gradle.kts; do
-            if [ -f "$s" ]; then
-              sed -i 's/id("org.jetbrains.kotlin.android") version "[^"]*"/id("org.jetbrains.kotlin.android") version "2.2.20"/g' "$s"
-              sed -i 's/id "org.jetbrains.kotlin.android" version "[^"]*"/id "org.jetbrains.kotlin.android" version "2.2.20"/g' "$s"
-            fi
-          done
-
       - name: Install Dependencies
         run: flutter pub get
 
       - name: Build Release APK
-        run: flutter build apk --release --no-tree-shake-icons
+        run: flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation
 
       - name: Upload Release APK Artifact
         uses: actions/upload-artifact@v4
