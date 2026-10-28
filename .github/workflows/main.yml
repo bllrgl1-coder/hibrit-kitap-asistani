@@ -25,20 +25,26 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Prepare Android Platform & Custom Manifest
+      - name: Prepare Android Platform & Fix SDK Compatibility
         run: |
+          sed -i 's/\.withValues(alpha: /\.withOpacity(/g' lib/screens/*.dart
           cp android/app/src/main/AndroidManifest.xml /tmp/AndroidManifest.xml.bak
-          cp android/app/build.gradle /tmp/app_build.gradle.bak
           cp android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani/MainActivity.kt /tmp/MainActivity.kt.bak
           rm -rf android
           flutter create . --platforms=android --org com.bilal --project-name hibrit_kitap_asistani
           cp /tmp/AndroidManifest.xml.bak android/app/src/main/AndroidManifest.xml
-          cp /tmp/app_build.gradle.bak android/app/build.gradle
           mkdir -p android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani
           cp /tmp/MainActivity.kt.bak android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani/MainActivity.kt
+          sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 23/g' android/app/build.gradle
+          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/g' android/app/build.gradle
+          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 34/g' android/app/build.gradle
+          sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 34/g' android/app/build.gradle
 
       - name: Install Dependencies
         run: flutter pub get
+
+      - name: Verify Dart Code
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
       - name: Build Release APK
         run: flutter build apk --release --no-tree-shake-icons
