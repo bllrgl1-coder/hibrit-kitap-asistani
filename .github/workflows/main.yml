@@ -1,0 +1,50 @@
+name: Build Android Release APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: 'stable'
+          cache: true
+
+      - name: Prepare Android Platform & Custom Manifest
+        run: |
+          cp android/app/src/main/AndroidManifest.xml /tmp/AndroidManifest.xml.bak
+          cp android/app/build.gradle /tmp/app_build.gradle.bak
+          cp android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani/MainActivity.kt /tmp/MainActivity.kt.bak
+          rm -rf android
+          flutter create . --platforms=android --org com.bilal --project-name hibrit_kitap_asistani
+          cp /tmp/AndroidManifest.xml.bak android/app/src/main/AndroidManifest.xml
+          cp /tmp/app_build.gradle.bak android/app/build.gradle
+          mkdir -p android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani
+          cp /tmp/MainActivity.kt.bak android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani/MainActivity.kt
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Release APK
+        run: flutter build apk --release --no-tree-shake-icons
+
+      - name: Upload Release APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hibrit-kitap-asistani-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
