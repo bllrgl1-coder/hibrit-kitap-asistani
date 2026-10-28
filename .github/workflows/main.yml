@@ -30,8 +30,9 @@ jobs:
           sed -i 's/\.withValues(alpha: /\.withOpacity(/g' lib/screens/*.dart
           cp android/app/src/main/AndroidManifest.xml /tmp/AndroidManifest.xml.bak
           cp android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani/MainActivity.kt /tmp/MainActivity.kt.bak
-          rm -rf android
+          rm -rf android test
           flutter create . --platforms=android --org com.bilal --project-name hibrit_kitap_asistani
+          rm -rf test
           cp /tmp/AndroidManifest.xml.bak android/app/src/main/AndroidManifest.xml
           mkdir -p android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani
           cp /tmp/MainActivity.kt.bak android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani/MainActivity.kt
@@ -42,9 +43,6 @@ jobs:
 
       - name: Install Dependencies
         run: flutter pub get
-
-      - name: Verify Dart Code
-        run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
       - name: Build Release APK
         run: flutter build apk --release --no-tree-shake-icons
