@@ -25,9 +25,12 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Prepare Android Platform & Fix SDK Compatibility
+      - name: Prepare Android Platform & Fix Kotlin/SDK Versions
         run: |
+          # 1. Flutter 3.24 uyumlulugu ve kararli flutter_tts 4.0.2 surumu
           sed -i 's/\.withValues(alpha: /\.withOpacity(/g' lib/screens/*.dart
+          sed -i 's/flutter_tts: \^4.0.2/flutter_tts: 4.0.2/g' pubspec.yaml
+          # 2. AndroidManifest ve MainActivity yedegini al
           cp android/app/src/main/AndroidManifest.xml /tmp/AndroidManifest.xml.bak
           cp android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani/MainActivity.kt /tmp/MainActivity.kt.bak
           rm -rf android test
@@ -36,10 +39,14 @@ jobs:
           cp /tmp/AndroidManifest.xml.bak android/app/src/main/AndroidManifest.xml
           mkdir -p android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani
           cp /tmp/MainActivity.kt.bak android/app/src/main/kotlin/com/bilal/hibrit_kitap_asistani/MainActivity.kt
+          # 3. Kotlin surumunu 2.0.20, AGP surumunu 8.5.0 ve compileSdk=35 / minSdk=23 yap
+          sed -i 's/id "org.jetbrains.kotlin.android" version ".*"/id "org.jetbrains.kotlin.android" version "2.0.20"/g' android/settings.gradle
+          sed -i 's/id "com.android.application" version ".*"/id "com.android.application" version "8.5.0"/g' android/settings.gradle
+          sed -i 's/distributionUrl=.*/distributionUrl=https\:\/\/services.gradle.org\/distributions\/gradle-8.7-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties
           sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 23/g' android/app/build.gradle
           sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/g' android/app/build.gradle
-          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 34/g' android/app/build.gradle
-          sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 34/g' android/app/build.gradle
+          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 35/g' android/app/build.gradle
+          sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 35/g' android/app/build.gradle
 
       - name: Install Dependencies
         run: flutter pub get
